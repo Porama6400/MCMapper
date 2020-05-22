@@ -19,7 +19,7 @@ This will map _server.jar_ into _server-out.jar_ with according to _server-map.t
 
 | Argument             | Required | Note                                                |
 | -------------------- | -------- | --------------------------------------------------- |
-| -in                  | yes      | Input jar file                                      |
-| -map                 | yes      | Obfuscation map file                                |
+| -in server.jar       | yes      | Input jar file                                      |
+| -map server.txt      | yes      | Obfuscation map file                                |
 | -out output_path.jar | no       | Set output jar file                                 |
 | -verify              | no       | Verify output jar file with ASM's CheckClassAdapter |

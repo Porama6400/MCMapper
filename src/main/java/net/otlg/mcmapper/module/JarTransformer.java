@@ -10,7 +10,6 @@ import org.objectweb.asm.ClassWriter;
 
 import java.io.*;
 import java.util.HashMap;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;

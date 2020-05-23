@@ -14,12 +14,12 @@ import java.util.regex.Pattern;
 public class ClassTransformer extends ClassVisitor {
     private final HashMap<String, ClassRecord> classes;
     private final String zipEntryName;
+    private final Pattern signaturePattern = Pattern.compile("(L)([a-zA-Z0-9$/]+)([;<\\[])");
+    private final ClassRecord classRecord;
     private String outName;
-    private Pattern signaturePattern = Pattern.compile("(L)([a-zA-Z0-9$/]+)([;<\\[])");
-    private ClassRecord classRecord;
 
     public ClassTransformer(ClassVisitor visitor, HashMap<String, ClassRecord> classes, String zipEntryName) {
-        super(Opcodes.ASM5, visitor);
+        super(Opcodes.ASM8, visitor);
         this.classes = classes;
         this.zipEntryName = zipEntryName;
 
@@ -111,7 +111,14 @@ public class ClassTransformer extends ClassVisitor {
             name = record.getName();
         }
 
-        return new MethodVisitor(Opcodes.ASM5, super.visitMethod(access, name, desc, signature, exceptions)) {
+        if (exceptions != null) {
+            for (int i = 0; i < exceptions.length; i++) {
+                if (exceptions[i] == null) continue;
+                exceptions[i] = transformName(exceptions[i]);
+            }
+        }
+
+        return new MethodVisitor(Opcodes.ASM8, super.visitMethod(access, name, desc, signature, exceptions)) {
 
             @Override
             public void visitLdcInsn(Object cst) {

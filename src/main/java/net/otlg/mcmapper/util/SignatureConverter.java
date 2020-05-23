@@ -19,6 +19,7 @@ public class SignatureConverter {
 
     /**
      * Convert to ASM's signature thingy
+     *
      * @param type
      * @return
      */

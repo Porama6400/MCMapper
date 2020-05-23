@@ -18,9 +18,12 @@ dependencies {
     testImplementation("junit", "junit", "4.12")
 
     export("commons-cli:commons-cli:1.4");
-    export("org.ow2.asm:asm:5.0.3");
-    export("org.ow2.asm:asm-util:8.0.1");
+
     export("commons-io:commons-io:2.6");
+
+    export("org.ow2.asm:asm:8.0.1");
+    export("org.ow2.asm:asm-commons:8.0.1");
+    export("org.ow2.asm:asm-util:8.0.1");
 
 }
 

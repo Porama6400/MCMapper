@@ -21,6 +21,7 @@ public class MapperLogger extends Logger {
 
         private static PrintWriter writer;
         private final File file;
+
         public MCMapperLogHandler(File file) {
             this.file = file;
             try {

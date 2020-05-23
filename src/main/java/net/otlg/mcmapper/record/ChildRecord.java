@@ -6,7 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ChildRecord {
-    private static Pattern signaturePattern = Pattern.compile("\\(([^)]*)\\)");
+    private static final Pattern signaturePattern = Pattern.compile("\\(([^)]*)\\)");
     private final String returnType;
     private final String originalName;
     private final String obfuscatedName;

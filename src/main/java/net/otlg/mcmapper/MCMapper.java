@@ -14,7 +14,7 @@ public class MCMapper {
 
     public static final Logger logger = new MapperLogger();
 
-    public static void main(String args[]) throws IOException, ParseException {
+    public static void main(String[] args) throws IOException, ParseException {
 
         DefaultParser parser = new DefaultParser();
         Options options = new Options();

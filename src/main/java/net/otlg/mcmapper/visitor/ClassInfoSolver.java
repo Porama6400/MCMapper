@@ -12,7 +12,7 @@ public class ClassInfoSolver extends ClassVisitor {
     private final String zipEntryName;
 
     public ClassInfoSolver(ClassVisitor classVisitor, HashMap<String, ClassRecord> classes, String zipEntryName) {
-        super(Opcodes.ASM5, classVisitor);
+        super(Opcodes.ASM8, classVisitor);
         this.classes = classes;
         this.zipEntryName = zipEntryName;
     }
@@ -24,7 +24,7 @@ public class ClassInfoSolver extends ClassVisitor {
             classRecord.setSuperClass(superName.replace('/', '.'));
             String[] myInterfaces = new String[interfaces.length];
             for (int i = 0; i < interfaces.length; i++) {
-                myInterfaces[i] = interfaces[i].replace('/','.');
+                myInterfaces[i] = interfaces[i].replace('/', '.');
             }
             classRecord.setInterfaces(myInterfaces);
         }

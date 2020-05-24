@@ -30,7 +30,6 @@ public class MCMapper {
         options.addOption(new Option("output", "output", true, "File to write to"));
 
         options.addOption(new Option("?", "help", false, "Show help page"));
-        options.addOption(new Option("?", "help", false, "Show help page"));
         options.addOption(new Option("verify", false, "Whether to verify jar file"));
 
         CommandLine commandLine;

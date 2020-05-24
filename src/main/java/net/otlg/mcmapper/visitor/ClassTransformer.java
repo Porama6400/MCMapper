@@ -251,9 +251,21 @@ public class ClassTransformer extends ClassVisitor {
                 return super.visitAnnotation(desc, visible);
             }
 
-            /*===========================================================
-                       NOT IN USED BY CURRENT MINECRAFT JAR FILE
-             ===========================================================*/
+            @Override
+            public void visitMultiANewArrayInsn(String descriptor, int numDimensions) {
+                if (descriptor != null) descriptor = transformDescriptor(descriptor);
+                super.visitMultiANewArrayInsn(descriptor, numDimensions);
+            }
+
+            @Override
+            public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
+                if (type != null) type = transformName(type);
+                super.visitTryCatchBlock(start, end, handler, type);
+            }
+
+            /*=======================================================================
+                This section doesn't seems to be used by current Minecraft Jar file
+             =======================================================================*/
 
             @Override
             public AnnotationVisitor visitTypeAnnotation(int typeRef, TypePath typePath, String desc, boolean visible) {
@@ -297,18 +309,6 @@ public class ClassTransformer extends ClassVisitor {
                 MCMapper.logger.warning(desc);
 
                 return super.visitTryCatchAnnotation(typeRef, typePath, desc, visible);
-            }
-
-            @Override
-            public void visitMultiANewArrayInsn(String descriptor, int numDimensions) {
-                if (descriptor != null) descriptor = transformDescriptor(descriptor);
-                super.visitMultiANewArrayInsn(descriptor, numDimensions);
-            }
-
-            @Override
-            public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
-                if (type != null) type = transformName(type);
-                super.visitTryCatchBlock(start, end, handler, type);
             }
         };
     }

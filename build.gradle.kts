@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "net.otlg"
-version = "1.1"
+version = "1.2"
 
 repositories {
     mavenCentral()
@@ -18,7 +18,7 @@ dependencies {
     testImplementation("junit", "junit", "4.12")
 
     export("commons-cli:commons-cli:1.4");
-
+    export("org.jetbrains:annotations:19.0.0");
     export("commons-io:commons-io:2.6");
 
     export("org.ow2.asm:asm:8.0.1");

@@ -12,12 +12,14 @@ import net.otlg.mcmapper.record.ClassRecord;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 public class JarTransformer {
     public static HashMap<String, ClassRecord> classes;
@@ -68,69 +70,64 @@ public class JarTransformer {
         }
 
         // SOLVE CLASS SUPERCLASS
+        MCMapper.logger.info("Solving class tree...");
 
-        {
-            final byte[] buffer = new byte[1024];
-            ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(fileIn));
-            ZipEntry zipEntry;
-            int length = 0;
+        ZipPipe classSolverPipe = new ZipPipe(MCMapper.executor, (in, out) -> {
+            ClassReader cr = null;
+            try {
+                String zipEntryName = in.getZipEntry().getName();
 
-            // ITERATE THROUGH ALL ENTRIES (AND COPY OVER TO NEW FILE)
-            MCMapper.logger.info("Remapping...");
-            while ((zipEntry = zipInputStream.getNextEntry()) != null) {
-
-
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                while ((length = zipInputStream.read(buffer)) > 0) {
-                    byteArrayOutputStream.write(buffer, 0, length);
+                if (!JarTransformer.isRelevantFile(zipEntryName)) {
+                    out.setState(Output.State.PASSTHROUGHS);
+                    return;
                 }
 
-                // PATCHING IF THE FILE MATCHED WITH NAME
-                String zipEntryName = zipEntry.getName();
-
-                if (zipEntryName.endsWith(".class") && (zipEntryName.startsWith("com/mojang")
-                        || zipEntryName.startsWith("net/minecraft")
-                        || !zipEntryName.contains("/"))) {
-                    ByteArrayInputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-
-                    ClassReader cr = new ClassReader(inputStream);
-                    ClassWriter cw = new ClassWriter(cr, 0);
-                    ClassInfoSolver solver = new ClassInfoSolver(cw, classes, zipEntryName);
-                    cr.accept(solver, 0);
-                }
+                cr = new ClassReader(in.getInputStream());
+                ClassWriter cw = new ClassWriter(cr, 0);
+                ClassInfoSolver solver = new ClassInfoSolver(cw, classes, in.getZipEntry().getName());
+                cr.accept(solver, 0);
+            } catch (IOException exception) {
+                exception.printStackTrace();
             }
-        }
+        });
+        classSolverPipe.process(fileIn, null);
 
         // PROCESS JAR FILE
+        MCMapper.logger.info("Transforming...");
 
-        ZipPipe zipPipe = new ZipPipe(new Pipe() {
-            @Override
-            public void process(Input in, Output out) {
-                try {
-                    String zipEntryName = in.getZipEntry().getName();
-                    if (zipEntryName.endsWith(".class") && (zipEntryName.startsWith("com/mojang")
-                            || zipEntryName.startsWith("net/minecraft")
-                            || !zipEntryName.contains("/"))) {
+        ZipPipe transformPipe = new ZipPipe(MCMapper.executor, (in, out) -> {
+            try {
+                String zipEntryName = in.getZipEntry().getName();
 
-
-                        ClassReader cr = new ClassReader(in.getInputStream());
-                        ClassWriter cw = new ClassWriter(cr, 0);
-                        ClassTransformer transformer = new ClassTransformer(cw, classes, zipEntryName);
-                        cr.accept(transformer, 0);
-                        byte[] byteArray = cw.toByteArray();
-                        out.setBytes(byteArray);
-
-                        if (transformer.getOutName() != null) out.setZipEntry(new ZipEntry(transformer.getOutName()));
-
-                    } else {
-                        out.setState(Output.State.PASSTHROUGHS);
-                    }
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
+                if (!JarTransformer.isRelevantFile(zipEntryName)) {
+                    out.setState(Output.State.PASSTHROUGHS);
+                    return;
                 }
+
+                ClassReader cr = new ClassReader(in.getInputStream());
+                ClassWriter cw = new ClassWriter(cr, 0);
+                ClassTransformer transformer = new ClassTransformer(cw, classes, zipEntryName);
+                cr.accept(transformer, 0);
+                byte[] byteArray = cw.toByteArray();
+                out.setBytes(byteArray);
+
+                if (transformer.getOutName() != null) out.setZipEntry(new ZipEntry(transformer.getOutName()));
+
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
             }
         });
 
-        zipPipe.process(fileIn,fileOut);
+        transformPipe.process(fileIn, fileOut);
+    }
+
+    public static boolean isRelevantFile(String zipEntryName) {
+        if (!zipEntryName.endsWith(".class")) return false;
+
+        if (!zipEntryName.contains("/")) return true;
+        if (zipEntryName.startsWith("com/mojang")) return true;
+        if (zipEntryName.startsWith("net/minecraft")) return true;
+
+        return false;
     }
 }

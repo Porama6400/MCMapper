@@ -1,4 +1,4 @@
-package net.otlg.mcmapper.visitor;
+package net.otlg.mcmapper.module.visitor;
 
 import net.otlg.mcmapper.MCMapper;
 import net.otlg.mcmapper.record.ChildRecord;
@@ -371,7 +371,6 @@ public class ClassTransformer extends ClassVisitor {
         for (char c : input.toCharArray()) {
             if (c == '(') {
                 en = true;
-                continue;
             } else if (c == ')') {
                 return builder.toString();
             } else {

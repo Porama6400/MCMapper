@@ -1,4 +1,4 @@
-package net.otlg.mcmapper.visitor;
+package net.otlg.mcmapper.module.visitor;
 
 import net.otlg.mcmapper.record.ClassRecord;
 import org.objectweb.asm.ClassVisitor;

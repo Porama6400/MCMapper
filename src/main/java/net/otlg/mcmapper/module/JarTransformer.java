@@ -1,10 +1,14 @@
 package net.otlg.mcmapper.module;
 
+import net.otlg.bitrumen.pipe.Pipe;
+import net.otlg.bitrumen.pipe.ZipPipe;
+import net.otlg.bitrumen.wrapper.Input;
+import net.otlg.bitrumen.wrapper.Output;
 import net.otlg.mcmapper.MCMapper;
+import net.otlg.mcmapper.module.visitor.ClassInfoSolver;
+import net.otlg.mcmapper.module.visitor.ClassTransformer;
 import net.otlg.mcmapper.record.ChildRecord;
 import net.otlg.mcmapper.record.ClassRecord;
-import net.otlg.mcmapper.visitor.ClassInfoSolver;
-import net.otlg.mcmapper.visitor.ClassTransformer;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -14,7 +18,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 public class JarTransformer {
     public static HashMap<String, ClassRecord> classes;
@@ -100,53 +103,34 @@ public class JarTransformer {
 
         // PROCESS JAR FILE
 
-        final byte[] buffer = new byte[1024];
-        ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(fileIn));
-        ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(fileOut));
-
-        ZipEntry zipEntry;
-        int length = 0;
-
-        // ITERATE THROUGH ALL ENTRIES (AND COPY OVER TO NEW FILE)
-        MCMapper.logger.info("Remapping...");
-        while ((zipEntry = zipInputStream.getNextEntry()) != null) {
+        ZipPipe zipPipe = new ZipPipe(new Pipe() {
+            @Override
+            public void process(Input in, Output out) {
+                try {
+                    String zipEntryName = in.getZipEntry().getName();
+                    if (zipEntryName.endsWith(".class") && (zipEntryName.startsWith("com/mojang")
+                            || zipEntryName.startsWith("net/minecraft")
+                            || !zipEntryName.contains("/"))) {
 
 
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            while ((length = zipInputStream.read(buffer)) > 0) {
-                byteArrayOutputStream.write(buffer, 0, length);
+                        ClassReader cr = new ClassReader(in.getInputStream());
+                        ClassWriter cw = new ClassWriter(cr, 0);
+                        ClassTransformer transformer = new ClassTransformer(cw, classes, zipEntryName);
+                        cr.accept(transformer, 0);
+                        byte[] byteArray = cw.toByteArray();
+                        out.setBytes(byteArray);
+
+                        if (transformer.getOutName() != null) out.setZipEntry(new ZipEntry(transformer.getOutName()));
+
+                    } else {
+                        out.setState(Output.State.PASSTHROUGHS);
+                    }
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
             }
+        });
 
-            // PATCHING IF THE FILE MATCHED WITH NAME
-            String zipEntryName = zipEntry.getName();
-
-            if (zipEntryName.endsWith(".class") && (zipEntryName.startsWith("com/mojang")
-                    || zipEntryName.startsWith("net/minecraft")
-                    || !zipEntryName.contains("/"))) {
-                ByteArrayInputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-
-                ClassReader cr = new ClassReader(inputStream);
-                ClassWriter cw = new ClassWriter(cr, 0);
-                ClassTransformer transformer = new ClassTransformer(cw, classes, zipEntryName);
-                cr.accept(transformer, 0);
-                byteArrayOutputStream = new ByteArrayOutputStream();
-                byte[] byteArray = cw.toByteArray();
-                byteArrayOutputStream.write(byteArray);
-
-                if (transformer.getOutName() != null) zipEntry = new ZipEntry(transformer.getOutName());
-            }
-
-
-            zipEntry.setSize(byteArrayOutputStream.size());
-            zipEntry.setCompressedSize(-1);
-            zipOutputStream.putNextEntry(zipEntry);
-            byteArrayOutputStream.writeTo(zipOutputStream);
-        }
-
-        MCMapper.logger.info("Flushing files...");
-
-        zipInputStream.close();
-        zipOutputStream.closeEntry();
-        zipOutputStream.close();
+        zipPipe.process(fileIn,fileOut);
     }
 }

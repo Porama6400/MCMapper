@@ -8,10 +8,12 @@ import org.objectweb.asm.*;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ClassTransformer extends ClassVisitor {
+    public static boolean transformLocalVarName = false;
     private final HashMap<String, ClassRecord> classes;
     private final String zipEntryName;
     private final Pattern signaturePattern = Pattern.compile("(L)([a-zA-Z0-9$/]+)([;<\\[])");
@@ -190,9 +192,19 @@ public class ClassTransformer extends ClassVisitor {
                 super.visitMethodInsn(opcode, owner, name, desc, itf);
             }
 
+            Map<String, String> existedLocalVar = new HashMap<>();
+
             @Override
             public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
-                if (desc != null) desc = transformDescriptor(desc);
+                if (desc != null) {
+                    desc = transformDescriptor(desc);
+                    if (name.length() < 3 && transformLocalVarName) {
+                        String nameFromDisc = getLocalVarNameFromDesc(desc, existedLocalVar);
+                        if (nameFromDisc != null) {
+                            name = nameFromDisc;
+                        }
+                    }
+                }
                 if (signature != null) signature = transformDescriptor(signature);
                 super.visitLocalVariable(name, desc, signature, start, end, index);
             }
@@ -229,7 +241,6 @@ public class ClassTransformer extends ClassVisitor {
 
                         if (obj instanceof String) {
                             local[i] = transformName((String) obj);
-//                        MCMapper.logger.info(Arrays.toString(local));
                         }
                     }
                 }
@@ -238,17 +249,10 @@ public class ClassTransformer extends ClassVisitor {
                         Object obj = stack[i];
                         if (obj instanceof String) {
                             stack[i] = transformName((String) obj);
-//                        MCMapper.logger.info(Arrays.toString(stack));
                         }
                     }
                 }
                 super.visitFrame(type, nLocal, local, nStack, stack);
-            }
-
-            @Override // Never use by server code
-            public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-                if (desc != null) desc = transformDescriptor(desc);
-                return super.visitAnnotation(desc, visible);
             }
 
             @Override
@@ -266,6 +270,12 @@ public class ClassTransformer extends ClassVisitor {
             /*=======================================================================
                 This section doesn't seems to be used by current Minecraft Jar file
              =======================================================================*/
+
+            @Override // Never use by server code
+            public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+                if (desc != null) desc = transformDescriptor(desc);
+                return super.visitAnnotation(desc, visible);
+            }
 
             @Override
             public AnnotationVisitor visitTypeAnnotation(int typeRef, TypePath typePath, String desc, boolean visible) {
@@ -365,7 +375,7 @@ public class ClassTransformer extends ClassVisitor {
         return signature.replace('.', '/');
     }
 
-    public String extractBracket(String input) {
+    public static String extractBracket(String input) {
         boolean en = false;
         StringBuilder builder = new StringBuilder();
         for (char c : input.toCharArray()) {
@@ -380,6 +390,41 @@ public class ClassTransformer extends ClassVisitor {
         if (en) {
             throw new IllegalArgumentException("unclosed bracket");
         } else return "";
+    }
+
+    public static String getLocalVarNameFromDesc(String input, Map<String, String> existedVarMap) {
+        StringBuilder builder = new StringBuilder();
+        for (char c : input.toCharArray()) {
+
+            switch (c) {
+                case '/':
+                    builder = new StringBuilder();
+                    break;
+                case '[':
+                    builder.append("Array");
+                case ';':
+                    String out = builder.toString();
+
+                    if (out.length() == 0) return null;
+                    char[] chars = out.toCharArray();
+                    chars[0] = (chars[0] + "").toLowerCase().charAt(0);
+                    out = new String(chars);
+                    out = out.replaceAll("[^a-zA-Z]", "");
+                    for (int i = 0; i < 100; i++) {
+                        String name = out + (i == 0 ? "" : i);
+                        if (!existedVarMap.containsKey(name)) {
+                            existedVarMap.put(name, name);
+                            return name;
+                        }
+                    }
+                    return null;
+                default:
+                    builder.append(c);
+                    break;
+
+            }
+        }
+        return null;
     }
 
     public String getOutName() {

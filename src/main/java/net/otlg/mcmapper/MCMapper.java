@@ -3,6 +3,7 @@ package net.otlg.mcmapper;
 import net.otlg.bitrumen.pipe.ZipPipe;
 import net.otlg.mcmapper.module.JarTransformer;
 import net.otlg.mcmapper.module.JarVerifier;
+import net.otlg.mcmapper.module.visitor.ClassTransformer;
 import net.otlg.mcmapper.util.MapperLogger;
 import org.apache.commons.cli.*;
 
@@ -13,8 +14,6 @@ import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 public class MCMapper {
-
-
     public static final Logger logger = new MapperLogger();
     public static ExecutorService executor;
 
@@ -34,6 +33,7 @@ public class MCMapper {
 
         options.addOption(new Option("?", "help", false, "Show help page"));
         options.addOption(new Option("verify", false, "Whether to verify jar file"));
+        options.addOption(new Option("renvar", "renamevar", false, "Attempt to rename local var based on their class"));
         options.addOption(new Option("thread", true, "Number of threads to use"));
 
         CommandLine commandLine;
@@ -51,6 +51,7 @@ public class MCMapper {
             logger.info("-map [map file]        - set obfuscation map to read from");
             logger.info("-out [jar out]         - set output jar file");
             logger.info("-thread [n]            - set number of threads to use");
+            logger.info("-renvar                - attempt to rename local variable based on their class");
             logger.info("-verify                - verify jar file after mapping process");
             return;
         }
@@ -77,6 +78,11 @@ public class MCMapper {
                 return;
             }
         }
+
+        if (commandLine.hasOption("renamevar")) {
+            ClassTransformer.transformLocalVarName = true;
+        }
+
         executor = Executors.newFixedThreadPool(threadCount);
         logger.info("Running using " + threadCount + " threads");
 

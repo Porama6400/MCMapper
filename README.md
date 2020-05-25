@@ -22,4 +22,5 @@ This will map _server.jar_ into _server-out.jar_ with according to _server-map.t
 | -in server.jar       | yes      | Input jar file                                      |
 | -map server.txt      | yes      | Obfuscation map file                                |
 | -out output_path.jar | no       | Set output jar file                                 |
+| -thread n            | no       | Set number of threads to run                        |
 | -verify              | no       | Verify output jar file with ASM's CheckClassAdapter |

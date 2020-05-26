@@ -1,7 +1,7 @@
-package net.otlg.bitrumen.pipe;
+package net.otlg.bitumen.pipe;
 
-import net.otlg.bitrumen.wrapper.Input;
-import net.otlg.bitrumen.wrapper.Output;
+import net.otlg.bitumen.wrapper.Input;
+import net.otlg.bitumen.wrapper.Output;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;

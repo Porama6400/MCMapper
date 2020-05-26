@@ -1,9 +1,7 @@
 package net.otlg.mcmapper.module;
 
-import net.otlg.bitrumen.pipe.Pipe;
-import net.otlg.bitrumen.pipe.ZipPipe;
-import net.otlg.bitrumen.wrapper.Input;
-import net.otlg.bitrumen.wrapper.Output;
+import net.otlg.bitumen.pipe.ZipPipe;
+import net.otlg.bitumen.wrapper.Output;
 import net.otlg.mcmapper.MCMapper;
 import net.otlg.mcmapper.module.visitor.ClassInfoSolver;
 import net.otlg.mcmapper.module.visitor.ClassTransformer;

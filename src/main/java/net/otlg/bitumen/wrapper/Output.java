@@ -1,4 +1,4 @@
-package net.otlg.bitrumen.wrapper;
+package net.otlg.bitumen.wrapper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package net.otlg.bitrumen;
+package net.otlg.bitumen;
 
 import java.io.*;
 

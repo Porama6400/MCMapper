@@ -1,6 +1,6 @@
-package net.otlg.bitrumen.wrapper;
+package net.otlg.bitumen.wrapper;
 
-import net.otlg.bitrumen.StreamUtil;
+import net.otlg.bitumen.StreamUtil;
 
 import java.io.IOException;
 import java.io.InputStream;

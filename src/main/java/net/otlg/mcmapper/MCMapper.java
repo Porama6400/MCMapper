@@ -1,6 +1,6 @@
 package net.otlg.mcmapper;
 
-import net.otlg.bitrumen.pipe.ZipPipe;
+import net.otlg.bitumen.pipe.ZipPipe;
 import net.otlg.mcmapper.module.JarTransformer;
 import net.otlg.mcmapper.module.JarVerifier;
 import net.otlg.mcmapper.module.visitor.ClassTransformer;

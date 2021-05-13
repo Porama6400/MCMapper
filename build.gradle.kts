@@ -9,8 +9,8 @@ group = "net.otlg"
 version = "1.3"
 
 repositories {
+    maven("https://files.otlg.net/repositories/maven")
     mavenCentral()
-    maven("https://files.otlg.net/maven-repo/");
 }
 
 
@@ -41,19 +41,31 @@ tasks.shadowJar {
     }
 }
 
+if (System.getenv("USERNAME") == null) {
+    println("WARN: Username environment variable is not defined!");
+}
+
+if(System.getenv("TOKEN") == null){
+    println("WARN: Token environment variable is not defined!");
+}
+
 publishing {
     repositories {
         maven {
-            name = "GithubPackage"
+            name = "Github"
             url = uri("https://maven.pkg.github.com/Porama6400/MCMapper")
             credentials {
-                username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
-                password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+                username = System.getenv("USERNAME")
+                password = System.getenv("TOKEN")
             }
+        }
+        maven {
+            name = "buildFiles"
+            url = uri("$buildDir/repo/")
         }
     }
     publications {
-        create<MavenPublication>("GithubPackage") {
+        create<MavenPublication>("maven") {
             from(components["java"])
         }
     }

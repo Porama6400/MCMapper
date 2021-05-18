@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module external.system.module.type="sourceSet" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <output url="file://$MODULE_DIR$/../../build/classes/java/main" />
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/../../src/main">
+      <sourceFolder url="file://$MODULE_DIR$/../../src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../src/main/resources" type="java-resource" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Gradle: net.otlg:bitumen:1.0" level="project" />
+    <orderEntry type="library" name="Gradle: commons-cli:commons-cli:1.4" level="project" />
+    <orderEntry type="library" name="Gradle: commons-io:commons-io:2.6" level="project" />
+    <orderEntry type="library" name="Gradle: org.ow2.asm:asm-commons:8.0.1" level="project" />
+    <orderEntry type="library" name="Gradle: org.ow2.asm:asm-util:8.0.1" level="project" />
+    <orderEntry type="library" name="Gradle: org.ow2.asm:asm:8.0.1" level="project" />
+    <orderEntry type="library" name="Gradle: org.ow2.asm:asm-analysis:8.0.1" level="project" />
+    <orderEntry type="library" name="Gradle: org.ow2.asm:asm-tree:8.0.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.jetbrains:annotations:19.0.0" level="project" />
+  </component>
+</module>

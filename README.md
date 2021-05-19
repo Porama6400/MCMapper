@@ -7,8 +7,8 @@ Minecraft mapping tool to deobfuscate jar file with Mojang provided map file
 > gradle build
 
 **Binary output can be found here:**
-MCMapper CUI: ./core/build/libs/MCMapper-XYZ-all.jar
-MCMapper GUI: ./gui/build/libs/MCMapperGUI-XYZ-all.jar
+* MCMapper CUI: ./core/build/libs/MCMapper-XYZ-all.jar
+* MCMapper GUI: ./gui/build/libs/MCMapperGUI-XYZ-all.jar
 
 ## Usage
 

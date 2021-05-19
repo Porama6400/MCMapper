@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "net.otlg"
-version = "1.3"
+version = "1.3.2"
 
 repositories {
     maven("https://files.otlg.net/repositories/maven")
@@ -15,7 +15,7 @@ repositories {
 dependencies {
     testImplementation("junit", "junit", "4.12")
 
-    implementation("net.otlg:bitumen:1.0.1+")
+    implementation("net.otlg:bitumen:2.0.1")
 
     implementation("commons-cli:commons-cli:1.4");
     implementation("commons-io:commons-io:2.6");

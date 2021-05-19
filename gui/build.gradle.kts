@@ -4,7 +4,8 @@ plugins {
 }
 
 group = "net.otlg"
-version = "1.3"
+version = "1.1.1"
+
 
 repositories {
     mavenCentral()
@@ -15,6 +16,7 @@ dependencies {
     testImplementation("junit", "junit", "4.12")
 
     implementation("com.google.code.gson", "gson", "2.8.6");
+    implementation("net.otlg:bitumen:2.0.1")
 //    implementation(project(":core"))
 }
 

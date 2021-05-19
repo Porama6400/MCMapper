@@ -1,7 +1,7 @@
 package net.otlg.mcmapper.module;
 
+import net.otlg.bitumen.pipe.PipeAction;
 import net.otlg.bitumen.pipe.ZipPipe;
-import net.otlg.bitumen.wrapper.Output;
 import net.otlg.mcmapper.MCMapper;
 import net.otlg.mcmapper.module.visitor.ClassInfoSolver;
 import net.otlg.mcmapper.module.visitor.ClassTransformer;
@@ -76,7 +76,7 @@ public class JarTransformer {
                 String zipEntryName = in.getZipEntry().getName();
 
                 if (!JarTransformer.isRelevantFile(zipEntryName)) {
-                    out.setState(Output.State.PASSTHROUGHS);
+                    out.setState(PipeAction.PASSTHROUGHS);
                     return;
                 }
 
@@ -98,7 +98,7 @@ public class JarTransformer {
                 String zipEntryName = in.getZipEntry().getName();
 
                 if (!JarTransformer.isRelevantFile(zipEntryName)) {
-                    out.setState(Output.State.PASSTHROUGHS);
+                    out.setState(PipeAction.PASSTHROUGHS);
                     return;
                 }
 
@@ -108,7 +108,6 @@ public class JarTransformer {
                 cr.accept(transformer, 0);
                 byte[] byteArray = cw.toByteArray();
                 out.setBytes(byteArray);
-
                 if (transformer.getOutName() != null) out.setZipEntry(new ZipEntry(transformer.getOutName()));
 
             } catch (Throwable throwable) {

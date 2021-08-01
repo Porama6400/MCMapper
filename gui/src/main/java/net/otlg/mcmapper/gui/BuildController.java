@@ -3,9 +3,6 @@ package net.otlg.mcmapper.gui;
 import javafx.application.Platform;
 import net.otlg.bitumen.pipe.PipeAction;
 import net.otlg.bitumen.pipe.ZipPipe;
-import net.otlg.mcmapper.gui.adapter.container.DownloadEntry;
-import net.otlg.mcmapper.gui.adapter.container.VersionDetails;
-import net.otlg.mcmapper.gui.adapter.container.VersionInfo;
 
 import java.io.*;
 import java.util.concurrent.ScheduledExecutorService;
@@ -24,14 +21,25 @@ public class BuildController {
     static final String BINARY_MAPPED_STRIPPED_PATH = "./data/binary-mapped-stripped.jar";
     static final String MAP_PATH = "./data/map.txt";
 
-    public static void runTaskMap(UIController ui) throws IOException, InterruptedException {
+    public static void runTaskMap(UIController ui, String version, boolean client) throws IOException, InterruptedException {
         if (!new File(MCMAPPER_PATH).exists()) {
             ui.log("can not find " + MCMAPPER_PATH);
             throw new FileNotFoundException(MCMAPPER_PATH);
         }
 
         Runtime runtime = Runtime.getRuntime();
-        Process exec = runtime.exec("java -jar " + MCMAPPER_PATH + " -in " + BINARY_PATH + " -map " + MAP_PATH + " -out " + BINARY_MAPPED_PATH);
+
+        StringBuilder commandBuilder = new StringBuilder()
+                .append("java -jar ").append(MCMAPPER_PATH)
+                .append(" -in ").append(BINARY_PATH)
+                .append(" -map ").append(MAP_PATH)
+                .append(" -out ").append(BINARY_MAPPED_PATH)
+                .append(" -version ").append(version);
+
+        if (client)
+            commandBuilder.append(" -client");
+
+        Process exec = runtime.exec(commandBuilder.toString());
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
         String temp;
@@ -71,28 +79,17 @@ public class BuildController {
         ui.setUIState(UIState.BUSY);
 
         final String version = ui.choiceBoxVersion.getValue();
-        final boolean server = ui.choiceBoxJarType.getValue().equals("Server");
+        final boolean client = ui.choiceBoxJarType.getValue().equals("Client");
 
         executor.execute(() -> {
             try {
-                VersionInfo versionInfo = ui.versionMap.get(version);
-                VersionDetails details = versionInfo.fetchDetails();
-
-                DownloadEntry binaryDownloader = server ? details.getServer() : details.getClient();
-                DownloadEntry mapDownloader = server ? details.getServerMap() : details.getClientMap();
 
                 ui.log("Preparing directory...");
                 new File(DATA_PATH).mkdir();
                 new File(DECOMPILED_PATH).mkdir();
 
-                ui.log("Downloading binary...");
-                binaryDownloader.download(new File(BINARY_PATH));
-                ui.log("Downloading mapping file...");
-                mapDownloader.download(new File(MAP_PATH));
-                ui.log("Download completed!");
-
                 ui.log("Mapping...");
-                runTaskMap(ui);
+                runTaskMap(ui, version, client);
                 ui.log("Mapping completed!");
 
                 ui.log("Stripping unrelated components...");

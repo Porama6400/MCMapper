@@ -4,10 +4,9 @@ import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import net.otlg.mcmapper.gui.adapter.MojangAPI;
-import net.otlg.mcmapper.gui.adapter.container.VersionInfo;
+import net.otlg.mcmapper.adapter.MojangAPI;
+import net.otlg.mcmapper.adapter.container.VersionInfo;
 
 import java.io.IOException;
 import java.util.Comparator;
@@ -20,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class UIController {
     final List<String> versionListDisplayBuffer = new LinkedList<>();
     final LinkedList<String> logQueue = new LinkedList<>();
-    final Image image = new Image(this.getClass().getResourceAsStream("/image.jpg"));
+//    final Image image = new Image(this.getClass().getResourceAsStream("/image.jpg"));
     private final ScheduledExecutorService executor;
     HashMap<String, VersionInfo> versionMap;
     boolean choiceBoxVersionUpdatePending = false;
@@ -112,7 +111,7 @@ public class UIController {
     public void setUIState(UIState state) {
         switch (state) {
             case INITIALIZING:
-                imageView.setImage(image);
+//                imageView.setImage(image);
                 break;
             case BUSY:
                 choiceBoxVersion.setDisable(true);

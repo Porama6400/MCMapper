@@ -1,4 +1,4 @@
-package net.otlg.mcmapper.gui;
+package net.otlg.mcmapper.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

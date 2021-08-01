@@ -1,4 +1,4 @@
-package net.otlg.mcmapper.gui.adapter.container;
+package net.otlg.mcmapper.adapter.container;
 
 public class VersionDetails {
 

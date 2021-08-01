@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "net.otlg"
-version = "1.3.2"
+version = "1.4"
 
 repositories {
     maven("https://files.otlg.net/repositories/maven")
@@ -19,6 +19,8 @@ dependencies {
 
     implementation("commons-cli:commons-cli:1.4");
     implementation("commons-io:commons-io:2.6");
+
+    implementation("com.google.code.gson", "gson", "2.8.6");
 
     implementation("org.ow2.asm:asm:8.0.1");
     implementation("org.ow2.asm:asm-commons:8.0.1");

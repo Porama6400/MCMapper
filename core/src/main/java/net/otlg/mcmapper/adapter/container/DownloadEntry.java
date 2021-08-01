@@ -1,8 +1,8 @@
-package net.otlg.mcmapper.gui.adapter.container;
+package net.otlg.mcmapper.adapter.container;
 
 import com.google.gson.annotations.SerializedName;
-import net.otlg.mcmapper.gui.IOUtils;
-import net.otlg.mcmapper.gui.adapter.MojangAPI;
+import net.otlg.mcmapper.adapter.MojangAPI;
+import net.otlg.mcmapper.util.IOUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;

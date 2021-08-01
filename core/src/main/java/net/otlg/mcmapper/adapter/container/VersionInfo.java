@@ -1,6 +1,6 @@
-package net.otlg.mcmapper.gui.adapter.container;
+package net.otlg.mcmapper.adapter.container;
 
-import net.otlg.mcmapper.gui.adapter.MojangAPI;
+import net.otlg.mcmapper.adapter.MojangAPI;
 
 import java.io.IOException;
 

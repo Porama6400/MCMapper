@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 public class MCMapperGUI extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(8);
         UIController controller = new UIController(executor);
 
 

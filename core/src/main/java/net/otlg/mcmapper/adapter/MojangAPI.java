@@ -1,10 +1,10 @@
-package net.otlg.mcmapper.gui.adapter;
+package net.otlg.mcmapper.adapter;
 
 import com.google.gson.*;
-import net.otlg.mcmapper.gui.IOUtils;
-import net.otlg.mcmapper.gui.adapter.container.DownloadEntry;
-import net.otlg.mcmapper.gui.adapter.container.VersionDetails;
-import net.otlg.mcmapper.gui.adapter.container.VersionInfo;
+import net.otlg.mcmapper.adapter.container.DownloadEntry;
+import net.otlg.mcmapper.adapter.container.VersionDetails;
+import net.otlg.mcmapper.adapter.container.VersionInfo;
+import net.otlg.mcmapper.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;

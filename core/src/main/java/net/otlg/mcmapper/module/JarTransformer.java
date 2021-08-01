@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -22,7 +23,7 @@ import java.util.zip.ZipEntry;
 public class JarTransformer {
     public static HashMap<String, ClassRecord> classes;
 
-    public static void transformJar(File fileIn, File fileMap, File fileOut) throws IOException {
+    public static void transformJar( ExecutorService executor, File fileIn, File fileMap, File fileOut) throws IOException {
         if (!fileIn.exists()) throw new IllegalArgumentException("Input file doesn't exist!");
         if (!fileMap.exists()) throw new IllegalArgumentException("Map file doesn't exist!");
         // LOAD OBFUSCATION MAP
@@ -70,7 +71,7 @@ public class JarTransformer {
         // SOLVE CLASS SUPERCLASS
         MCMapper.logger.info("Solving class tree...");
 
-        ZipPipe classSolverPipe = new ZipPipe(MCMapper.executor, (in, out) -> {
+        ZipPipe classSolverPipe = new ZipPipe(executor, (in, out) -> {
             ClassReader cr = null;
             try {
                 String zipEntryName = in.getZipEntry().getName();
@@ -93,7 +94,7 @@ public class JarTransformer {
         // PROCESS JAR FILE
         MCMapper.logger.info("Transforming...");
 
-        ZipPipe transformPipe = new ZipPipe(MCMapper.executor, (in, out) -> {
+        ZipPipe transformPipe = new ZipPipe(executor, (in, out) -> {
             try {
                 String zipEntryName = in.getZipEntry().getName();
 

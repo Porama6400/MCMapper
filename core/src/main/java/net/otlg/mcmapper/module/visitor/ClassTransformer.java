@@ -13,7 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ClassTransformer extends ClassVisitor {
-    public static boolean transformLocalVarName = false;
+    public static boolean flagTransformLocalVarName = false;
     private final HashMap<String, ClassRecord> classes;
     private final String zipEntryName;
     private final Pattern signaturePattern = Pattern.compile("(L)([a-zA-Z0-9$/]+)([;<\\[])");
@@ -198,7 +198,7 @@ public class ClassTransformer extends ClassVisitor {
             public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
                 if (desc != null) {
                     desc = transformDescriptor(desc);
-                    if (name.length() < 3 && transformLocalVarName) {
+                    if (name.length() < 3 && flagTransformLocalVarName) {
                         String nameFromDisc = getLocalVarNameFromDesc(desc, existedLocalVar);
                         if (nameFromDisc != null) {
                             name = nameFromDisc;

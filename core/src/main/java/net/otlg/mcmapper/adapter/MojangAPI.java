@@ -32,8 +32,6 @@ public class MojangAPI {
 
             JsonObject element = versionsJsonArray.get(i).getAsJsonObject();
             VersionInfo versionInfo = new VersionInfo(element.get("id").getAsString(), element.get("url").getAsString());
-
-            System.out.println(versionInfo.toString());
             versionMap.put(versionInfo.getId(), versionInfo);
 
             if (versionInfo.getId().equals("19w36a")) break; // first version with mapping

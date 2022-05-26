@@ -44,6 +44,7 @@ public class JarTransformer {
                 Matcher matcher = methodMatcher.matcher(s);
                 matcher.matches();
                 ChildRecord record = new ChildRecord(matcher.group(2), matcher.group(3), matcher.group(4));
+                if(currentClass == null) throw new IllegalStateException("currentClass is null while trying to access");
 
                 if (matcher.group(1).contains(":") || matcher.group(3).contains("(")) {
                     // Is a method

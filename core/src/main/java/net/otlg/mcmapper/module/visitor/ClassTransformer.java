@@ -21,11 +21,63 @@ public class ClassTransformer extends ClassVisitor {
     private String outName;
 
     public ClassTransformer(ClassVisitor visitor, HashMap<String, ClassRecord> classes, String zipEntryName) {
-        super(Opcodes.ASM8, visitor);
+        super(Opcodes.ASM9, visitor);
         this.classes = classes;
         this.zipEntryName = zipEntryName;
 
         classRecord = classes.get(zipEntryName.substring(0, zipEntryName.length() - 6).replace('/', '.'));
+    }
+
+    public static String extractBracket(String input) {
+        boolean en = false;
+        StringBuilder builder = new StringBuilder();
+        for (char c : input.toCharArray()) {
+            if (c == '(') {
+                en = true;
+            } else if (c == ')') {
+                return builder.toString();
+            } else {
+                builder.append(c);
+            }
+        }
+        if (en) {
+            throw new IllegalArgumentException("unclosed bracket");
+        } else return "";
+    }
+
+    public static String getLocalVarNameFromDesc(String input, Map<String, String> existedVarMap) {
+        StringBuilder builder = new StringBuilder();
+        for (char c : input.toCharArray()) {
+
+            switch (c) {
+                case '/':
+                    builder = new StringBuilder();
+                    break;
+                case '[':
+                    builder.append("Array");
+                case ';':
+                    String out = builder.toString();
+
+                    if (out.length() == 0) return null;
+                    char[] chars = out.toCharArray();
+                    chars[0] = (chars[0] + "").toLowerCase().charAt(0);
+                    out = new String(chars);
+                    out = out.replaceAll("[^a-zA-Z]", "");
+                    for (int i = 0; i < 100; i++) {
+                        String name = out + (i == 0 ? "" : i);
+                        if (!existedVarMap.containsKey(name)) {
+                            existedVarMap.put(name, name);
+                            return name;
+                        }
+                    }
+                    return null;
+                default:
+                    builder.append(c);
+                    break;
+
+            }
+        }
+        return null;
     }
 
     @Override
@@ -52,8 +104,12 @@ public class ClassTransformer extends ClassVisitor {
         if (name != null) {
             name = transformName(name);
             String[] split = name.split("\\$");
-            outerName = split[0];
-            innerName = split[1];
+            if (outerName != null) {
+                outerName = split[0];
+            }
+            if (innerName != null) {
+                innerName = split[1];
+            }
         }
         super.visitInnerClass(name, outerName, innerName, access);
     }
@@ -120,7 +176,9 @@ public class ClassTransformer extends ClassVisitor {
             }
         }
 
-        return new MethodVisitor(Opcodes.ASM8, super.visitMethod(access, name, desc, signature, exceptions)) {
+        return new MethodVisitor(Opcodes.ASM9, super.visitMethod(access, name, desc, signature, exceptions)) {
+
+            Map<String, String> existedLocalVar = new HashMap<>();
 
             @Override
             public void visitLdcInsn(Object cst) {
@@ -160,8 +218,15 @@ public class ClassTransformer extends ClassVisitor {
                         Type newType = Type.getType(typeName);
                         injectTypeSort(newType, type.getSort());
                         bsmArgs[i] = newType;
+                    } else if (object instanceof String) {
+                        // do nothing
                     } else {
                         MCMapper.logger.warning("Unknown invoke dynamic argument: " + object.getClass().getName());
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
 
@@ -191,8 +256,6 @@ public class ClassTransformer extends ClassVisitor {
                 }
                 super.visitMethodInsn(opcode, owner, name, desc, itf);
             }
-
-            Map<String, String> existedLocalVar = new HashMap<>();
 
             @Override
             public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
@@ -267,11 +330,6 @@ public class ClassTransformer extends ClassVisitor {
                 super.visitTryCatchBlock(start, end, handler, type);
             }
 
-            /*=======================================================================
-                This section doesn't seems to be used by current Minecraft Jar file
-             =======================================================================*/
-
-            @Override // Never use by server code
             public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
                 if (desc != null) desc = transformDescriptor(desc);
                 return super.visitAnnotation(desc, visible);
@@ -280,11 +338,19 @@ public class ClassTransformer extends ClassVisitor {
             @Override
             public AnnotationVisitor visitTypeAnnotation(int typeRef, TypePath typePath, String desc, boolean visible) {
                 MCMapper.logger.warning(">>>> TYPE_ANNO");
-                MCMapper.logger.warning(typePath.toString());
+                if (typePath == null) {
+                    MCMapper.logger.warning("NULL TYPE PATH");
+                } else {
+                    MCMapper.logger.warning(typePath.toString());
+                }
                 MCMapper.logger.warning(desc);
 
                 return super.visitTypeAnnotation(typeRef, typePath, desc, visible);
             }
+
+            /*=======================================================================
+                This section doesn't seems to be used by current Minecraft Jar file
+             =======================================================================*/
 
             @Override
             public AnnotationVisitor visitInsnAnnotation(int typeRef, TypePath typePath, String desc, boolean visible) {
@@ -373,58 +439,6 @@ public class ClassTransformer extends ClassVisitor {
             signature = signature.replace(matcher.group(), matcher.group(1) + className + matcher.group(3));
         }
         return signature.replace('.', '/');
-    }
-
-    public static String extractBracket(String input) {
-        boolean en = false;
-        StringBuilder builder = new StringBuilder();
-        for (char c : input.toCharArray()) {
-            if (c == '(') {
-                en = true;
-            } else if (c == ')') {
-                return builder.toString();
-            } else {
-                builder.append(c);
-            }
-        }
-        if (en) {
-            throw new IllegalArgumentException("unclosed bracket");
-        } else return "";
-    }
-
-    public static String getLocalVarNameFromDesc(String input, Map<String, String> existedVarMap) {
-        StringBuilder builder = new StringBuilder();
-        for (char c : input.toCharArray()) {
-
-            switch (c) {
-                case '/':
-                    builder = new StringBuilder();
-                    break;
-                case '[':
-                    builder.append("Array");
-                case ';':
-                    String out = builder.toString();
-
-                    if (out.length() == 0) return null;
-                    char[] chars = out.toCharArray();
-                    chars[0] = (chars[0] + "").toLowerCase().charAt(0);
-                    out = new String(chars);
-                    out = out.replaceAll("[^a-zA-Z]", "");
-                    for (int i = 0; i < 100; i++) {
-                        String name = out + (i == 0 ? "" : i);
-                        if (!existedVarMap.containsKey(name)) {
-                            existedVarMap.put(name, name);
-                            return name;
-                        }
-                    }
-                    return null;
-                default:
-                    builder.append(c);
-                    break;
-
-            }
-        }
-        return null;
     }
 
     public String getOutName() {

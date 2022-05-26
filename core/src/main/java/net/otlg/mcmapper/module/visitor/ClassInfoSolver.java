@@ -12,7 +12,7 @@ public class ClassInfoSolver extends ClassVisitor {
     private final String zipEntryName;
 
     public ClassInfoSolver(ClassVisitor classVisitor, HashMap<String, ClassRecord> classes, String zipEntryName) {
-        super(Opcodes.ASM8, classVisitor);
+        super(Opcodes.ASM9, classVisitor);
         this.classes = classes;
         this.zipEntryName = zipEntryName;
     }

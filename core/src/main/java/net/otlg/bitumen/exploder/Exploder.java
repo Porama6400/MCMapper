@@ -18,7 +18,7 @@ public class Exploder {
             try {
                 ClassReader classReader = new ClassReader(in.getInputStream());
                 ClassWriter classWriter = new ClassWriter(classReader, 0);
-                ExploderVisitor exploderVisitor = new ExploderVisitor(Opcodes.ASM8, classWriter);
+                ExploderVisitor exploderVisitor = new ExploderVisitor(Opcodes.ASM9, classWriter);
                 classReader.accept(exploderVisitor, 0);
             } catch (IOException e) {
                 e.printStackTrace();

@@ -1,5 +1,7 @@
 package net.otlg.mcmapper;
 
+import net.otlg.bitumen.StreamUtil;
+import net.otlg.bitumen.pipe.ZipPipe;
 import net.otlg.mcmapper.adapter.MojangAPI;
 import net.otlg.mcmapper.adapter.container.DownloadEntry;
 import net.otlg.mcmapper.adapter.container.VersionDetails;
@@ -16,6 +18,7 @@ import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 public class MCMapper {
     public static final Logger logger = new MapperLogger();
@@ -126,6 +129,7 @@ public class MCMapper {
         if (versionInfo == null)
             throw new IOException("Unknown version " + version);
 
+        System.out.println("Using version: " + versionInfo.toString());
         final VersionDetails versionDetails = versionInfo.fetchDetails();
 
         DownloadEntry jarFileEntry = client ? versionDetails.getClient() : versionDetails.getServer();
@@ -139,6 +143,20 @@ public class MCMapper {
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
         logger.info("Running using " + threadCount + " threads");
 
+        logger.info("Performing preflight");
+        Pattern jarPattern = Pattern.compile("META-INF/versions/[0-9.]+/server-[0-9.]+.jar");
+        ZipPipe pipe = new ZipPipe(executor, (in, out) -> {
+            String name = in.getZipEntry().getName();
+            if (jarPattern.matcher(name).matches()) {
+                System.out.println("Found inner version file, mapping that instead... (1.18+ mode)");
+                File tempFile = new File("./temp.jar");
+                StreamUtil.saveStream(in.getInputStream(), tempFile);
+                tempFile.renameTo(fileIn);
+            }
+        });
+        pipe.process(fileIn, null);
+
+        logger.info("Transforming");
         try {
             JarTransformer.transformJar(executor, fileIn, fileMap, fileOut);
 

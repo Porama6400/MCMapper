@@ -1,9 +1,6 @@
 package net.otlg.bitumen;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 public class StreamUtil {
     public static byte[] toByteArray(InputStream input) throws IOException {
@@ -18,6 +15,14 @@ public class StreamUtil {
         int readSize;
         while ((readSize = inputStream.read(buffer)) > 0) {
             outputStream.write(buffer, 0, readSize);
+        }
+    }
+
+    public static void saveStream(InputStream inputStream, File output) {
+        try (FileOutputStream outputStream = new FileOutputStream(output)) {
+            copyStream(inputStream, outputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

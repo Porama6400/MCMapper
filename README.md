@@ -25,13 +25,13 @@ To run mapper on existing jar and map file:
 
 This will map _server.jar_ into _server-out.jar_ with according to _server-map.txt_
 
-| Argument             | Required | Note                                                |
-| -------------------- | -------- | --------------------------------------------------- |
-| -in server.jar       | yes      | Input jar file                                      |
-| -map server.txt      | yes      | Obfuscation map file                                |
-| -version <ver>       | no       | Version of the jar file                             |
-| -client true         | no       | tell downloader to get client (default is server)   |
-| -out output_path.jar | no       | Set output jar file                                 |
-| -thread n            | no       | Set number of threads to run                        |
-| -renamevar false     | no       | Rename local variable name based on class name      |
-| -verify              | no       | Verify output jar file with ASM's CheckClassAdapter |
+| Argument             | Note                                                |
+| -------------------- | --------------------------------------------------- |
+| -in server.jar       | Input jar file                                      |
+| -map server.txt      | Obfuscation map file                                |
+| -version <ver>       | Version of the jar file                             |
+| -client true         | tell downloader to get client (default is server)   |
+| -out output_path.jar | Set output jar file                                 |
+| -thread n            | Set number of threads to run                        |
+| -renamevar false     | Rename local variable name based on class name      |
+| -verify              | Verify output jar file with ASM's CheckClassAdapter |

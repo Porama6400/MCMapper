@@ -3,8 +3,6 @@ Minecraft mapping tool to deobfuscate jar file with Mojang provided map file
 
 ***
 
-**I am aware that currently it is not working with 1.18+, this will be fix soon**
-
 ## Compiling
 > gradle build
 

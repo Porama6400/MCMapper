@@ -1,8 +1,8 @@
 package dev.porama.mcmapper.module.visitor;
 
+import dev.porama.mcmapper.MCMapper;
 import dev.porama.mcmapper.record.ChildRecord;
 import dev.porama.mcmapper.record.ClassRecord;
-import dev.porama.mcmapper.MCMapper;
 import org.objectweb.asm.*;
 
 import java.lang.reflect.Field;
@@ -99,6 +99,17 @@ public class ClassTransformer extends ClassVisitor {
         super.visitOuterClass(owner, name, desc);
     }
 
+
+    @Override
+    public void visitNestHost(String nestHost) {
+        super.visitNestHost(transformName(nestHost));
+    }
+
+    @Override
+    public void visitNestMember(String nestMember) {
+        super.visitNestMember(transformName(nestMember));
+    }
+
     @Override
     public void visitInnerClass(String name, String outerName, String innerName, int access) {
         if (name != null) {
@@ -121,6 +132,9 @@ public class ClassTransformer extends ClassVisitor {
                 String className = name;
                 name = classRecord.getOriginalName().replace('.', '/');
                 outName = name + ".class";
+                if (outName.contains("Raid$RaiderType")) {
+                    System.out.println("Oh hey!");
+                }
                 MCMapper.logger.info("Mapping " + className + " -> " + name);
 
                 for (int i = 0; i < interfaces.length; i++) {
@@ -151,6 +165,9 @@ public class ClassTransformer extends ClassVisitor {
         }
 
         desc = transformDescriptor(desc);
+        if (signature != null) {
+            signature = transformDescriptor(signature);
+        }
         ChildRecord childRecord = classRecord.getField(name);
         if (childRecord != null) {
             name = childRecord.getName();
@@ -261,7 +278,7 @@ public class ClassTransformer extends ClassVisitor {
             public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
                 if (desc != null) {
                     desc = transformDescriptor(desc);
-                    if (name.length() < 3 && flagTransformLocalVarName) {
+                    if (name.length() < 5 && flagTransformLocalVarName) {
                         String nameFromDisc = getLocalVarNameFromDesc(desc, existedLocalVar);
                         if (nameFromDisc != null) {
                             name = nameFromDisc;
@@ -348,44 +365,7 @@ public class ClassTransformer extends ClassVisitor {
                 return super.visitTypeAnnotation(typeRef, typePath, desc, visible);
             }
 
-            /*=======================================================================
-                This section doesn't seems to be used by current Minecraft Jar file
-             =======================================================================*/
 
-            @Override
-            public AnnotationVisitor visitInsnAnnotation(int typeRef, TypePath typePath, String desc, boolean visible) {
-                MCMapper.logger.warning(">>>> INSN_ANNO");
-                MCMapper.logger.warning(typePath.toString());
-                MCMapper.logger.warning(desc);
-                return super.visitInsnAnnotation(typeRef, typePath, desc, visible);
-            }
-
-            @Override
-            public AnnotationVisitor visitLocalVariableAnnotation(int typeRef, TypePath typePath, Label[] start, Label[] end, int[] index, String desc, boolean visible) {
-                MCMapper.logger.warning(">>>> LOCAL_VAR_ANNO");
-                MCMapper.logger.warning(typePath.toString());
-                MCMapper.logger.warning(Arrays.toString(start));
-                MCMapper.logger.warning(Arrays.toString(end));
-                MCMapper.logger.warning(desc);
-
-                return super.visitLocalVariableAnnotation(typeRef, typePath, start, end, index, desc, visible);
-            }
-
-            @Override
-            public void visitAttribute(Attribute attr) {
-                MCMapper.logger.warning(">>>> ATTR");
-                MCMapper.logger.warning(attr.toString());
-                super.visitAttribute(attr);
-            }
-
-            @Override
-            public AnnotationVisitor visitTryCatchAnnotation(int typeRef, TypePath typePath, String desc, boolean visible) {
-                MCMapper.logger.warning(">>>> TRY_CATCH_ANNO");
-                MCMapper.logger.warning(typePath.toString());
-                MCMapper.logger.warning(desc);
-
-                return super.visitTryCatchAnnotation(typeRef, typePath, desc, visible);
-            }
         };
     }
 

@@ -1,11 +1,11 @@
 package dev.porama.mcmapper.module;
 
-import dev.porama.mcmapper.module.visitor.ClassInfoSolver;
-import dev.porama.mcmapper.record.ChildRecord;
 import dev.porama.bitumen.pipe.PipeAction;
 import dev.porama.bitumen.pipe.ZipPipe;
 import dev.porama.mcmapper.MCMapper;
+import dev.porama.mcmapper.module.visitor.ClassInfoSolver;
 import dev.porama.mcmapper.module.visitor.ClassTransformer;
+import dev.porama.mcmapper.record.ChildRecord;
 import dev.porama.mcmapper.record.ClassRecord;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -23,7 +23,7 @@ import java.util.zip.ZipEntry;
 public class JarTransformer {
     public static HashMap<String, ClassRecord> classes;
 
-    public static void transformJar( ExecutorService executor, File fileIn, File fileMap, File fileOut) throws IOException {
+    public static void transformJar(ExecutorService executor, File fileIn, File fileMap, File fileOut) throws IOException {
         if (!fileIn.exists()) throw new IllegalArgumentException("Input file doesn't exist!");
         if (!fileMap.exists()) throw new IllegalArgumentException("Map file doesn't exist!");
         // LOAD OBFUSCATION MAP
@@ -44,7 +44,8 @@ public class JarTransformer {
                 Matcher matcher = methodMatcher.matcher(s);
                 matcher.matches();
                 ChildRecord record = new ChildRecord(matcher.group(2), matcher.group(3), matcher.group(4));
-                if(currentClass == null) throw new IllegalStateException("currentClass is null while trying to access");
+                if (currentClass == null)
+                    throw new IllegalStateException("currentClass is null while trying to access");
 
                 if (matcher.group(1).contains(":") || matcher.group(3).contains("(")) {
                     // Is a method
@@ -98,6 +99,11 @@ public class JarTransformer {
         ZipPipe transformPipe = new ZipPipe(executor, (in, out) -> {
             try {
                 String zipEntryName = in.getZipEntry().getName();
+
+                if (zipEntryName.startsWith("META-INF")) {
+                    out.setState(PipeAction.DISCARD);
+                    return;
+                }
 
                 if (!JarTransformer.isRelevantFile(zipEntryName)) {
                     out.setState(PipeAction.PASSTHROUGHS);

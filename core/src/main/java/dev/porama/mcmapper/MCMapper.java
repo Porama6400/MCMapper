@@ -1,15 +1,15 @@
 package dev.porama.mcmapper;
 
+import dev.porama.bitumen.StreamUtil;
+import dev.porama.bitumen.pipe.ZipPipe;
 import dev.porama.mcmapper.adapter.MojangAPI;
+import dev.porama.mcmapper.adapter.container.DownloadEntry;
+import dev.porama.mcmapper.adapter.container.VersionDetails;
 import dev.porama.mcmapper.adapter.container.VersionInfo;
 import dev.porama.mcmapper.module.JarTransformer;
 import dev.porama.mcmapper.module.JarVerifier;
 import dev.porama.mcmapper.module.visitor.ClassTransformer;
 import dev.porama.mcmapper.util.MapperLogger;
-import dev.porama.bitumen.StreamUtil;
-import dev.porama.bitumen.pipe.ZipPipe;
-import dev.porama.mcmapper.adapter.container.DownloadEntry;
-import dev.porama.mcmapper.adapter.container.VersionDetails;
 import org.apache.commons.cli.*;
 
 import java.io.File;
@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -40,7 +41,7 @@ public class MCMapper {
         OPTIONS.addOption(new Option("thread", true, "Number of threads to use"));
     }
 
-    public static void main(String[] args) throws IOException, ParseException {
+    public static void main(String[] args) throws IOException {
         DefaultParser parser = new DefaultParser();
         CommandLine commandLine;
 
@@ -54,12 +55,22 @@ public class MCMapper {
 
         if (commandLine.hasOption("help")) {
             logger.info("java -jar MCMapper.jar [arguments]");
+            logger.info("");
+            logger.info("Example:");
+            logger.info("Map a server jar: java -jar MCMapper.jar -version 1.20.1");
+            logger.info("Map a clientJar jar:  java -jar MCMapper.jar -version 1.20.1 -clientJar true");
+            logger.info("Map a custom jar: java -jar MCMapper.jar -in input.jar -map map.txt -out output.jar");
+            logger.info("");
+            logger.info("Then output can be decompile, for an example");
+            logger.info("mkdir out");
+            logger.info("java -jar fernflower.jar output.jar out");
+            logger.info("");
             logger.info("-version [version]     - build from specific version");
             logger.info("-in [jar file]         - set jar file to map");
             logger.info("-map [map file]        - set obfuscation map to read from");
             logger.info("-out [jar out]         - set output jar file");
             logger.info("-thread [n]            - set number of threads to use");
-            logger.info("-rename                - attempt to rename local variable based on their class");
+            logger.info("-renamevar false       - disable renaming");
             logger.info("-verify                - verify jar file after mapping process");
             return;
         }
@@ -68,7 +79,8 @@ public class MCMapper {
         /*
          * configure input file
          */
-        String fileInPath = "in.jar";
+        boolean clientJar = commandLine.hasOption("clientJar");
+        String fileInPath = (clientJar ? "client" : "server") + ".jar";
         String fileMapPath = "map.txt";
 
         if (commandLine.hasOption("input")) {
@@ -80,7 +92,9 @@ public class MCMapper {
         }
 
         File fileIn = new File(fileInPath);
+        fileIn.deleteOnExit();
         File fileMap = new File(fileMapPath);
+        fileMap.deleteOnExit();
 
         /*
          * configure output file
@@ -89,7 +103,7 @@ public class MCMapper {
         if (commandLine.hasOption("output")) {
             fileOut = new File(commandLine.getOptionValue("output"));
         } else {
-            fileOut = new File(fileInPath.substring(0, fileInPath.length() - 4) + "-out.jar");
+            fileOut = new File(fileInPath.substring(0, fileInPath.length() - 4) + "-mapped.jar");
         }
 
         /*
@@ -108,14 +122,14 @@ public class MCMapper {
         /*
          * Rename variable setting
          */
-        if (commandLine.hasOption("renamevar")) {
+        if (!commandLine.hasOption("renamevar") || !commandLine.getOptionValue("renamevar").equals("false")) {
             // TODO pass setting into instance instead
             ClassTransformer.flagTransformLocalVarName = true;
         }
 
 
         if (commandLine.hasOption("version")) {
-            executeDownload(commandLine.getOptionValue("version"), commandLine.hasOption("client"), fileIn, fileMap);
+            executeDownload(commandLine.getOptionValue("version"), clientJar, fileIn, fileMap);
         }
 
         executeTransform(threadCount, fileIn, fileMap, fileOut, commandLine.hasOption("verify"));
@@ -141,6 +155,9 @@ public class MCMapper {
 
     public static void executeTransform(int threadCount, File fileIn, File fileMap, File fileOut, boolean verify) throws IOException {
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        File innerJar = new File("./inner.jar");
+        innerJar.deleteOnExit();
+        AtomicBoolean hasInnerJar = new AtomicBoolean(false);
         logger.info("Running using " + threadCount + " threads");
 
         logger.info("Performing preflight");
@@ -149,12 +166,15 @@ public class MCMapper {
             String name = in.getZipEntry().getName();
             if (jarPattern.matcher(name).matches()) {
                 System.out.println("Found inner version file, mapping that instead... (1.18+ mode)");
-                File tempFile = new File("./temp.jar");
-                StreamUtil.saveStream(in.getInputStream(), tempFile);
-                tempFile.renameTo(fileIn);
+                StreamUtil.saveStream(in.getInputStream(), innerJar);
+                hasInnerJar.set(true);
             }
         });
         pipe.process(fileIn, null);
+
+        if (hasInnerJar.get()) {
+            fileIn = innerJar;
+        }
 
         logger.info("Transforming");
         try {

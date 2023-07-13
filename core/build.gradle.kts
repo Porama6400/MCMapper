@@ -3,8 +3,8 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
-group = "net.otlg"
-version = "1.4"
+group = "dev.porama"
+version = "1.5"
 
 repositories {
     mavenCentral()
@@ -36,7 +36,7 @@ tasks.shadowJar {
     this.archiveBaseName.set("MCMapper")
     this.configurations.add(export)
     manifest {
-        attributes["Main-Class"] = "net.otlg.mcmapper.MCMapper"
+        attributes["Main-Class"] = "dev.porama.mcmapper.MCMapper"
     }
 }
 

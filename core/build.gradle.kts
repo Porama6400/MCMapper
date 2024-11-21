@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "dev.porama"
-version = "1.5"
+version = "1.5.1"
 
 repositories {
     mavenCentral()
@@ -16,17 +16,13 @@ dependencies {
     testImplementation("junit", "junit", "4.12")
 
     implementation("commons-cli:commons-cli:1.5.0")
-    implementation("commons-io:commons-io:2.11.0")
+    implementation("commons-io:commons-io:2.14.0")
 
     implementation("com.google.code.gson", "gson", "2.8.6")
 
-    implementation("org.ow2.asm:asm:9.2")
-    implementation("org.ow2.asm:asm-commons:9.2")
-    implementation("org.ow2.asm:asm-util:9.2")
-}
-
-configure<JavaPluginConvention> {
-    sourceCompatibility = JavaVersion.VERSION_1_8
+    implementation("org.ow2.asm:asm:9.7.1")
+    implementation("org.ow2.asm:asm-commons:9.7.1")
+    implementation("org.ow2.asm:asm-util:9.7.1")
 }
 
 var export = configurations.create("export")
